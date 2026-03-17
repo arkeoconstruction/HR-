@@ -15,7 +15,7 @@ let authClient = null;
 function getAuth() {
   if (authClient) return authClient;
 
-  const credPath = path.resolve(process.env.GOOGLE_APPLICATION_CREDENTIALS || './credentials.json');
+  const credPath = path.resolve(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || './credentials.json');
 
   if (fs.existsSync(credPath)) {
     const creds = JSON.parse(fs.readFileSync(credPath, 'utf8'));

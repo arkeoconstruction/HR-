@@ -1,7 +1,7 @@
 const { google } = require('googleapis');
 const { getAuth } = require('../auth');
 
-const REMINDER_EMAIL = process.env.REMINDER_EMAIL || 'ac@arkeoconstruction.com';
+const REMINDER_EMAIL = process.env.RECIPIENT_EMAIL || 'ac@arkeoconstruction.com';
 const GMAIL_FROM = process.env.GMAIL_FROM || 'ac@arkeoconstruction.com';
 
 async function getGmailClient() {

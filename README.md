@@ -43,9 +43,9 @@ cp .env.example .env
 ### 3. Configure `.env`
 
 ```env
-GOOGLE_APPLICATION_CREDENTIALS=./credentials.json
+GOOGLE_SERVICE_ACCOUNT_KEY=./credentials.json
 SHEET_ID=18HVul32CS-w1XYYXkBbGbbswdIzlnQs3NcQ05KkTm3E
-REMINDER_EMAIL=ac@arkeoconstruction.com
+RECIPIENT_EMAIL=ac@arkeoconstruction.com
 GMAIL_FROM=ac@arkeoconstruction.com
 CALENDAR_ID=primary
 PORT=3000
