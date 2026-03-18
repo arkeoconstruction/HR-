@@ -402,3 +402,113 @@ body {
   .stats-bar { grid-template-columns: 1fr; }
   .header-brand p { display: none; }
 }
+
+/* ── Multi-page additions ─────────────────────────────────────────────────── */
+.page { display: block; }
+.page.hidden { display: none !important; }
+
+/* Nav links */
+.header-nav {
+  display: flex;
+  gap: 4px;
+  margin: 0 16px;
+}
+.nav-link {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: all .15s;
+}
+.nav-link:hover { background: var(--gray-100); color: var(--gray-900); }
+.nav-link.active { background: var(--brand-light); color: var(--brand); }
+
+/* Page header */
+.page-header {
+  max-width: 1400px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-header h2 { font-size: 22px; font-weight: 700; }
+.page-header p { color: var(--gray-500); font-size: 14px; margin-top: 2px; }
+.back-link { gap: 4px; }
+.back-link svg { width: 16px; height: 16px; }
+
+/* Form page card */
+.form-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  max-width: 860px;
+}
+.form-group--full { grid-column: 1 / -1; }
+.form-group textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  transition: border-color .15s;
+}
+.form-group textarea:focus { border-color: var(--brand); }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-200);
+  margin-top: 24px;
+}
+
+/* Reminders page */
+.reminder-section { margin-bottom: 32px; }
+.reminder-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--gray-200);
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.reminder-section-title.danger { background: var(--danger-bg); color: var(--danger); border-color: #fecaca; }
+.reminder-section-title.warning { background: var(--warning-bg); color: var(--warning); border-color: #fde68a; }
+.reminder-section-title.info { background: var(--brand-light); color: var(--brand); border-color: #bfdbfe; }
+
+.reminder-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-top: none;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.reminder-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+.reminder-card:not(:last-child) { border-bottom: 1px solid var(--gray-100); }
+.reminder-card-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.reminder-card-info p { font-size: 13px; color: var(--gray-500); }
+.reminder-card-days {
+  font-size: 22px;
+  font-weight: 700;
+  min-width: 80px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .header-nav { display: none; }
+  .form-card { padding: 20px; }
+}
