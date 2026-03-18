@@ -20,6 +20,16 @@
           <p>Employee Contract Management</p>
         </div>
       </div>
+      <nav class="header-nav">
+        <button class="nav-tab active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-tab" data-view="reminders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          Reminders
+        </button>
+      </nav>
       <div class="header-actions">
         <button class="btn btn-outline" id="btn-sync-calendar" title="Sync calendar events for all employees">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -37,84 +47,102 @@
     </div>
   </header>
 
-  <!-- Stats Bar -->
-  <div class="stats-bar" id="stats-bar">
-    <div class="stat-card">
-      <div class="stat-value" id="stat-total">—</div>
-      <div class="stat-label">Total Employees</div>
+  <!-- ══════════════════════ DASHBOARD VIEW ══════════════════════ -->
+  <div id="view-dashboard">
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-label">Total Employees</div>
+      </div>
+      <div class="stat-card stat-card--danger">
+        <div class="stat-value" id="stat-expired">—</div>
+        <div class="stat-label">Expired</div>
+      </div>
+      <div class="stat-card stat-card--warning">
+        <div class="stat-value" id="stat-expiring-soon">—</div>
+        <div class="stat-label">Expiring &le; 30 Days</div>
+      </div>
+      <div class="stat-card stat-card--success">
+        <div class="stat-value" id="stat-active">—</div>
+        <div class="stat-label">Active</div>
+      </div>
     </div>
-    <div class="stat-card stat-card--danger">
-      <div class="stat-value" id="stat-expired">—</div>
-      <div class="stat-label">Expired</div>
+
+    <!-- Filter / Search Bar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search employees…" />
+      </div>
+      <div class="filter-group">
+        <label>Filter:</label>
+        <select id="filter-status">
+          <option value="all">All</option>
+          <option value="expired">Expired</option>
+          <option value="critical">Critical (&le; 7 days)</option>
+          <option value="warning">Warning (&le; 30 days)</option>
+          <option value="active">Active</option>
+        </select>
+        <select id="filter-type">
+          <option value="all">All Types</option>
+          <option value="Full-Time">Full-Time</option>
+          <option value="Part-Time">Part-Time</option>
+          <option value="Contractor">Contractor</option>
+          <option value="Casual">Casual</option>
+        </select>
+      </div>
     </div>
-    <div class="stat-card stat-card--warning">
-      <div class="stat-value" id="stat-expiring-soon">—</div>
-      <div class="stat-label">Expiring &le; 30 Days</div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading employees…</p>
+      </div>
+      <div id="empty-state" class="empty-state hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <h3>No employees found</h3>
+        <p>Add your first employee to get started</p>
+      </div>
+      <div class="table-wrap hidden" id="table-wrap">
+        <table class="employee-table" id="employee-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Type</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Contract Start</th>
+              <th>Contract End</th>
+              <th>Status</th>
+              <th>Missed Days</th>
+              <th>Notes</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employee-tbody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ══════════════════════ REMINDERS VIEW ══════════════════════ -->
+  <div id="view-reminders" class="hidden">
+    <div class="reminders-header">
+      <h2>Contract Reminders</h2>
+      <p>Contracts grouped by expiry urgency. Emails are sent automatically at 8 AM daily to <strong>ac@arkeoconstruction.com</strong>.</p>
     </div>
-    <div class="stat-card stat-card--success">
-      <div class="stat-value" id="stat-active">—</div>
-      <div class="stat-label">Active</div>
+    <div class="reminders-content" id="reminders-content">
+      <div class="loading-state" id="reminders-loading">
+        <div class="spinner"></div>
+        <p>Loading reminders…</p>
+      </div>
     </div>
   </div>
 
-  <!-- Filter / Search Bar -->
-  <div class="toolbar">
-    <div class="search-wrap">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="search-input" placeholder="Search employees…" />
-    </div>
-    <div class="filter-group">
-      <label>Filter:</label>
-      <select id="filter-status">
-        <option value="all">All</option>
-        <option value="expired">Expired</option>
-        <option value="critical">Critical (&le; 7 days)</option>
-        <option value="warning">Warning (&le; 30 days)</option>
-        <option value="active">Active</option>
-      </select>
-      <select id="filter-type">
-        <option value="all">All Types</option>
-        <option value="Full-Time">Full-Time</option>
-        <option value="Part-Time">Part-Time</option>
-        <option value="Contractor">Contractor</option>
-        <option value="Casual">Casual</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <div id="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading employees…</p>
-    </div>
-    <div id="empty-state" class="empty-state hidden">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-      <h3>No employees found</h3>
-      <p>Add your first employee to get started</p>
-    </div>
-    <div class="table-wrap hidden" id="table-wrap">
-      <table class="employee-table" id="employee-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Role</th>
-            <th>Type</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Contract Start</th>
-            <th>Contract End</th>
-            <th>Status</th>
-            <th>Missed Days</th>
-            <th class="col-actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="employee-tbody"></tbody>
-      </table>
-    </div>
-  </main>
-
-  <!-- Add / Edit Modal -->
+  <!-- ══════════════════════ ADD / EDIT MODAL ══════════════════════ -->
   <div class="modal-overlay hidden" id="modal-overlay">
     <div class="modal" id="modal">
       <div class="modal-header">
@@ -162,6 +190,10 @@
             <label for="form-end">Contract End <span class="required">*</span></label>
             <input type="date" id="form-end" />
           </div>
+        </div>
+        <div class="form-group form-group--full">
+          <label for="form-notes">Notes</label>
+          <textarea id="form-notes" rows="3" placeholder="Any additional notes about this employee…"></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-ghost" id="btn-cancel">Cancel</button>

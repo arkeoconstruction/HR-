@@ -4,6 +4,7 @@
 // ── State ─────────────────────────────────────────────────────────────────────
 let allEmployees = [];
 let editingRowIndex = null;
+let currentView = 'dashboard';
 
 // ── DOM Refs ──────────────────────────────────────────────────────────────────
 const loadingEl      = document.getElementById('loading');
@@ -19,10 +20,15 @@ const employeeForm   = document.getElementById('employee-form');
 const toastContainer = document.getElementById('toast-container');
 
 // Stats
-const statTotal       = document.getElementById('stat-total');
-const statExpired     = document.getElementById('stat-expired');
-const statExpiringSoon= document.getElementById('stat-expiring-soon');
-const statActive      = document.getElementById('stat-active');
+const statTotal        = document.getElementById('stat-total');
+const statExpired      = document.getElementById('stat-expired');
+const statExpiringSoon = document.getElementById('stat-expiring-soon');
+const statActive       = document.getElementById('stat-active');
+
+// Views
+const viewDashboard  = document.getElementById('view-dashboard');
+const viewReminders  = document.getElementById('view-reminders');
+const remindersContent = document.getElementById('reminders-content');
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,6 +48,23 @@ function bindEvents() {
 
   document.getElementById('btn-run-reminders').addEventListener('click', triggerReminders);
   document.getElementById('btn-sync-calendar').addEventListener('click', syncCalendar);
+
+  // Nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchView(tab.dataset.view));
+  });
+}
+
+// ── View Switching ────────────────────────────────────────────────────────────
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === view);
+  });
+  viewDashboard.classList.toggle('hidden', view !== 'dashboard');
+  viewReminders.classList.toggle('hidden', view !== 'reminders');
+
+  if (view === 'reminders') renderReminders();
 }
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -65,6 +88,7 @@ async function loadEmployees() {
     allEmployees = data.data || [];
     updateStats();
     renderTable();
+    if (currentView === 'reminders') renderReminders();
   } catch (err) {
     toast(`Failed to load employees: ${err.message}`, 'error');
   } finally {
@@ -87,10 +111,10 @@ function updateStats() {
   const soon    = allEmployees.filter(e => e.daysLeft !== null && e.daysLeft > 0 && e.daysLeft <= 30).length;
   const active  = allEmployees.filter(e => e.daysLeft !== null && e.daysLeft > 30).length;
 
-  statTotal.textContent       = total;
-  statExpired.textContent     = expired;
-  statExpiringSoon.textContent= soon;
-  statActive.textContent      = active;
+  statTotal.textContent        = total;
+  statExpired.textContent      = expired;
+  statExpiringSoon.textContent = soon;
+  statActive.textContent       = active;
 }
 
 // ── Render Table ──────────────────────────────────────────────────────────────
@@ -100,14 +124,11 @@ function renderTable() {
   const type   = filterType.value;
 
   let filtered = allEmployees.filter(emp => {
-    // text search
     if (query) {
-      const haystack = [emp.Name, emp.Role, emp.Email, emp.Phone].join(' ').toLowerCase();
+      const haystack = [emp.Name, emp.Role, emp.Email, emp.Phone, emp.Notes].join(' ').toLowerCase();
       if (!haystack.includes(query)) return false;
     }
-    // type filter
     if (type !== 'all' && emp.Type !== type) return false;
-    // status filter
     if (status !== 'all') {
       const d = emp.daysLeft;
       if (status === 'expired'  && !(d !== null && d <= 0)) return false;
@@ -128,7 +149,6 @@ function renderTable() {
 
   tbodyEl.innerHTML = filtered.map(emp => renderRow(emp)).join('');
 
-  // Bind action buttons
   tbodyEl.querySelectorAll('[data-action="edit"]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.row, 10)));
   });
@@ -138,7 +158,7 @@ function renderTable() {
 }
 
 function renderRow(emp) {
-  const { badge, daysLabel } = getStatusInfo(emp.daysLeft);
+  const { badge } = getStatusInfo(emp.daysLeft);
   const start = formatDate(emp.ContractStart);
   const end   = formatDate(emp.ContractEnd);
 
@@ -152,6 +172,7 @@ function renderRow(emp) {
     <td>${end}</td>
     <td>${badge}</td>
     <td>${esc(emp.MissedDays) || '0'}</td>
+    <td class="td-notes" title="${esc(emp.Notes)}">${esc(emp.Notes) || '<span style="color:#9ca3af">—</span>'}</td>
     <td>
       <div class="td-actions">
         <button class="btn btn-outline btn-icon" title="Edit" data-action="edit" data-row="${emp._rowIndex}">
@@ -167,27 +188,79 @@ function renderRow(emp) {
 
 function getStatusInfo(daysLeft) {
   if (daysLeft === null || daysLeft === undefined) {
-    return {
-      badge: '<span class="badge badge-unknown"><span class="badge-dot" style="background:#9ca3af"></span>No Date</span>',
-      daysLabel: '<span class="days-left-unknown">—</span>',
-    };
+    return { badge: '<span class="badge badge-unknown"><span class="badge-dot" style="background:#9ca3af"></span>No Date</span>' };
   }
   if (daysLeft <= 0) return {
     badge: '<span class="badge badge-expired"><span class="badge-dot" style="background:#dc2626"></span>Expired</span>',
-    daysLabel: `<span class="days-left-expired">EXPIRED</span>`,
   };
   if (daysLeft <= 7) return {
     badge: `<span class="badge badge-critical"><span class="badge-dot" style="background:#e11d48"></span>${daysLeft}d left</span>`,
-    daysLabel: `<span class="days-left-critical">${daysLeft} days</span>`,
   };
   if (daysLeft <= 30) return {
     badge: `<span class="badge badge-warning"><span class="badge-dot" style="background:#d97706"></span>${daysLeft}d left</span>`,
-    daysLabel: `<span class="days-left-warning">${daysLeft} days</span>`,
   };
   return {
     badge: `<span class="badge badge-active"><span class="badge-dot" style="background:#16a34a"></span>Active</span>`,
-    daysLabel: `<span class="days-left-active">${daysLeft} days</span>`,
   };
+}
+
+// ── Reminders View ────────────────────────────────────────────────────────────
+const REMINDER_THRESHOLDS = [
+  { key: 'expired',  label: 'Expired',         cls: 'reminder-group--expired',  test: d => d !== null && d <= 0 },
+  { key: 'critical', label: 'Critical — ≤ 7 days',  cls: 'reminder-group--critical', test: d => d !== null && d > 0 && d <= 7 },
+  { key: 'warning',  label: 'Warning — ≤ 30 days',  cls: 'reminder-group--warning',  test: d => d !== null && d > 7 && d <= 30 },
+  { key: 'upcoming', label: 'Upcoming — ≤ 60 days', cls: 'reminder-group--upcoming', test: d => d !== null && d > 30 && d <= 60 },
+];
+
+function renderReminders() {
+  const groups = REMINDER_THRESHOLDS.map(t => ({
+    ...t,
+    employees: allEmployees.filter(e => t.test(e.daysLeft)),
+  })).filter(g => g.employees.length > 0);
+
+  if (groups.length === 0) {
+    remindersContent.innerHTML = `
+      <div class="reminder-empty" style="padding:60px 20px;text-align:center;color:var(--gray-400)">
+        <svg style="width:48px;height:48px;margin:0 auto 12px;display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <p style="font-size:16px;font-weight:600;color:var(--gray-600)">No upcoming contract reminders</p>
+        <p style="margin-top:6px;font-size:14px">All contracts are active with more than 60 days remaining.</p>
+      </div>`;
+    return;
+  }
+
+  remindersContent.innerHTML = groups.map(g => `
+    <div class="reminder-group ${g.cls}">
+      <div class="reminder-group-header">
+        <h3>${g.label}</h3>
+        <span class="group-count">${g.employees.length}</span>
+      </div>
+      <div class="reminder-cards">
+        ${g.employees.map(emp => renderReminderCard(emp)).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function renderReminderCard(emp) {
+  const initial = (emp.Name || '?').charAt(0).toUpperCase();
+  const end = formatDate(emp.ContractEnd);
+  const d = emp.daysLeft;
+  let daysColor = 'var(--success)';
+  if (d <= 0) daysColor = 'var(--danger)';
+  else if (d <= 7) daysColor = '#e11d48';
+  else if (d <= 30) daysColor = 'var(--warning)';
+  else daysColor = 'var(--brand)';
+
+  const daysLabel = d <= 0 ? 'EXPIRED' : `${d}d`;
+
+  return `<div class="reminder-card">
+    <div class="reminder-card-avatar">${esc(initial)}</div>
+    <div class="reminder-card-info">
+      <div class="reminder-card-name">${esc(emp.Name)}</div>
+      <div class="reminder-card-meta">${esc(emp.Role) || '—'} &bull; ${esc(emp.Type) || '—'}</div>
+      <div class="reminder-card-end">Contract ends: <strong>${end}</strong></div>
+    </div>
+    <div class="reminder-card-days" style="color:${daysColor}">${daysLabel}</div>
+  </div>`;
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -216,6 +289,7 @@ function openEditModal(rowIndex) {
   document.getElementById('form-start').value   = toInputDate(emp.ContractStart);
   document.getElementById('form-end').value     = toInputDate(emp.ContractEnd);
   document.getElementById('form-missed').value  = emp.MissedDays || '0';
+  document.getElementById('form-notes').value   = emp.Notes || '';
   modalOverlay.classList.remove('hidden');
 }
 
@@ -238,6 +312,7 @@ async function handleFormSubmit(e) {
     ContractStart: document.getElementById('form-start').value,
     ContractEnd:   document.getElementById('form-end').value,
     MissedDays:    document.getElementById('form-missed').value || '0',
+    Notes:         document.getElementById('form-notes').value.trim(),
   };
 
   try {

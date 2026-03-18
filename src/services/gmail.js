@@ -1,5 +1,6 @@
 const { google } = require('googleapis');
 const { getAuth } = require('../auth');
+const { sendMailSMTP, isSMTPConfigured } = require('./mailer');
 
 const REMINDER_EMAIL = process.env.RECIPIENT_EMAIL || 'ac@arkeoconstruction.com';
 const GMAIL_FROM = process.env.GMAIL_FROM || 'ac@arkeoconstruction.com';
@@ -105,23 +106,38 @@ function getReminderSubjectAndBody(employee, daysLeft) {
 }
 
 async function sendReminderEmail(employee, daysLeft) {
-  const gmail = await getGmailClient();
   const { subject, body } = getReminderSubjectAndBody(employee, daysLeft);
 
-  const raw = buildEmailMessage({
-    to: REMINDER_EMAIL,
-    from: GMAIL_FROM,
-    subject,
-    body,
-  });
-
-  const res = await gmail.users.messages.send({
-    userId: 'me',
-    requestBody: { raw },
-  });
-
-  console.log(`[Gmail] Sent reminder for ${employee.Name} (${daysLeft} days) — messageId: ${res.data.id}`);
-  return res.data;
+  // Try Gmail API first, fall back to SMTP nodemailer
+  try {
+    const gmail = await getGmailClient();
+    const raw = buildEmailMessage({
+      to: REMINDER_EMAIL,
+      from: GMAIL_FROM,
+      subject,
+      body,
+    });
+    const res = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: { raw },
+    });
+    console.log(`[Gmail] Sent reminder for ${employee.Name} (${daysLeft} days) — messageId: ${res.data.id}`);
+    return res.data;
+  } catch (gmailErr) {
+    console.warn(`[Gmail] Gmail API failed: ${gmailErr.message}`);
+    if (isSMTPConfigured()) {
+      console.log('[Mailer] Falling back to SMTP (nodemailer)...');
+      const info = await sendMailSMTP({
+        to: REMINDER_EMAIL,
+        from: GMAIL_FROM,
+        subject,
+        html: body,
+      });
+      console.log(`[Mailer] SMTP sent reminder for ${employee.Name} (${daysLeft} days)`);
+      return info;
+    }
+    throw new Error(`Email delivery failed (Gmail: ${gmailErr.message}). Configure SMTP_* env vars to enable nodemailer fallback.`);
+  }
 }
 
-module.exports = { sendReminderEmail };
+module.exports = { sendReminderEmail, getReminderSubjectAndBody };
