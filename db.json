@@ -1,0 +1,101 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "name": "Maria Santos",
+      "role": "Site Manager",
+      "type": "Full-Time",
+      "email": "m.santos@rqlconstruction.com",
+      "phone": "+1 416 555 0101",
+      "contractStart": "2024-01-15",
+      "contractEnd": "2026-09-07",
+      "missedDays": 2,
+      "notes": "Senior site manager, contract up for renewal."
+    },
+    {
+      "id": 2,
+      "name": "James Okafor",
+      "role": "Electrician",
+      "type": "Contractor",
+      "email": "j.okafor@rqlconstruction.com",
+      "phone": "+1 416 555 0102",
+      "contractStart": "2025-09-14",
+      "contractEnd": "2026-09-14",
+      "missedDays": 0,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "name": "Laura Chen",
+      "role": "Project Coordinator",
+      "type": "Full-Time",
+      "email": "l.chen@rqlconstruction.com",
+      "phone": "+1 416 555 0103",
+      "contractStart": "2023-03-01",
+      "contractEnd": "2026-09-21",
+      "missedDays": 5,
+      "notes": "Excellent performance review."
+    },
+    {
+      "id": 4,
+      "name": "Derek Patel",
+      "role": "Heavy Equipment Operator",
+      "type": "Casual",
+      "email": "d.patel@rqlconstruction.com",
+      "phone": "+1 647 555 0104",
+      "contractStart": "2026-01-10",
+      "contractEnd": "2026-09-28",
+      "missedDays": 3,
+      "notes": ""
+    },
+    {
+      "id": 5,
+      "name": "Sophie Tremblay",
+      "role": "Safety Officer",
+      "type": "Full-Time",
+      "email": "s.tremblay@rqlconstruction.com",
+      "phone": "+1 514 555 0105",
+      "contractStart": "2022-10-01",
+      "contractEnd": "2026-10-07",
+      "missedDays": 1,
+      "notes": "OHSA certified."
+    },
+    {
+      "id": 6,
+      "name": "Ben Kowalski",
+      "role": "Carpenter",
+      "type": "Part-Time",
+      "email": "b.kowalski@rqlconstruction.com",
+      "phone": "+1 905 555 0106",
+      "contractStart": "2026-05-01",
+      "contractEnd": "2026-11-06",
+      "missedDays": 0,
+      "notes": "Part-time weekend crew."
+    },
+    {
+      "id": 7,
+      "name": "Aisha Nwosu",
+      "role": "Civil Engineer",
+      "type": "Full-Time",
+      "email": "a.nwosu@rqlconstruction.com",
+      "phone": "+1 416 555 0107",
+      "contractStart": "2025-01-20",
+      "contractEnd": "2027-06-30",
+      "missedDays": 0,
+      "notes": "P.Eng. licensed."
+    },
+    {
+      "id": 8,
+      "name": "Tom Brewer",
+      "role": "Labourer",
+      "type": "Casual",
+      "email": "t.brewer@rqlconstruction.com",
+      "phone": "+1 647 555 0108",
+      "contractStart": "2025-02-01",
+      "contractEnd": "2026-08-01",
+      "missedDays": 8,
+      "notes": "Contract expired — renewal pending."
+    }
+  ],
+  "nextId": 9
+}

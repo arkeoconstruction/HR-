@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RQL CRM — Reminders</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <div>
+          <h1>RQL Construction</h1>
+          <p>Employee Contract Management</p>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="/" class="nav-link">Employees</a>
+        <a href="/reminders.html" class="nav-link nav-link--active">Reminders</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page title -->
+  <div class="page-heading">
+    <div class="page-heading-inner">
+      <div>
+        <h2>Contract Reminders</h2>
+        <p>Employees whose contracts expire within 60 days</p>
+      </div>
+      <button class="btn btn-outline" id="btn-refresh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading reminders…</p>
+    </div>
+    <div id="empty-state" class="empty-state hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>No upcoming expirations</h3>
+      <p>All employee contracts are valid beyond 60 days</p>
+    </div>
+    <div id="reminder-groups" class="hidden"></div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script>
+    'use strict';
+
+    const MILESTONES = [
+      { label: 'Expires Today',   max: 0,  min: 0,  cls: 'reminder-group--danger'   },
+      { label: 'Within 7 Days',   max: 7,  min: 1,  cls: 'reminder-group--critical' },
+      { label: 'Within 14 Days',  max: 14, min: 8,  cls: 'reminder-group--warning'  },
+      { label: 'Within 21 Days',  max: 21, min: 15, cls: 'reminder-group--warning'  },
+      { label: 'Within 30 Days',  max: 30, min: 22, cls: 'reminder-group--caution'  },
+      { label: 'Within 60 Days',  max: 60, min: 31, cls: 'reminder-group--info'     },
+    ];
+
+    async function loadReminders() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('reminder-groups').classList.add('hidden');
+
+      try {
+        const res  = await fetch('/api/reminders');
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        render(json.data);
+      } catch (err) {
+        toast('Failed to load reminders: ' + err.message, 'error');
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }
+
+    function render(employees) {
+      document.getElementById('loading').classList.add('hidden');
+
+      if (employees.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        return;
+      }
+
+      const container = document.getElementById('reminder-groups');
+      container.innerHTML = '';
+
+      MILESTONES.forEach(({ label, max, min, cls }) => {
+        const group = employees.filter(e => e.daysLeft >= min && e.daysLeft <= max);
+        if (group.length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = `reminder-group ${cls}`;
+        section.innerHTML = `
+          <div class="reminder-group-header">
+            <h3>${esc(label)}</h3>
+            <span class="reminder-count">${group.length}</span>
+          </div>
+          <div class="reminder-cards">
+            ${group.map(emp => renderCard(emp)).join('')}
+          </div>
+        `;
+        container.appendChild(section);
+      });
+
+      container.classList.remove('hidden');
+    }
+
+    function renderCard(emp) {
+      const endFmt = formatDate(emp.contractEnd);
+      const d      = emp.daysLeft;
+      const dLabel = d === 0 ? 'Today' : `${d} day${d === 1 ? '' : 's'} left`;
+      return `
+        <div class="reminder-card">
+          <div class="reminder-card-header">
+            <div class="reminder-name">${esc(emp.name)}</div>
+            <div class="reminder-days">${esc(dLabel)}</div>
+          </div>
+          <div class="reminder-meta">
+            <span>${esc(emp.role || '—')}</span>
+            <span class="reminder-dot">·</span>
+            <span>${esc(emp.type || '—')}</span>
+          </div>
+          <div class="reminder-details">
+            <div><strong>Contract ends:</strong> ${endFmt}</div>
+            ${emp.email ? `<div><strong>Email:</strong> <a href="mailto:${esc(emp.email)}">${esc(emp.email)}</a></div>` : ''}
+            ${emp.phone ? `<div><strong>Phone:</strong> ${esc(emp.phone)}</div>` : ''}
+            ${emp.notes ? `<div class="reminder-notes">${esc(emp.notes)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function esc(s) {
+      if (!s && s !== 0) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatDate(str) {
+      if (!str) return '—';
+      try { return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+      catch { return str; }
+    }
+
+    function toast(message, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    document.getElementById('btn-refresh').addEventListener('click', loadReminders);
+    document.addEventListener('DOMContentLoaded', loadReminders);
+  </script>
+</body>
+</html>

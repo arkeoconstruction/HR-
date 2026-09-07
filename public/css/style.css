@@ -390,6 +390,114 @@ body {
   to   { opacity: 1; transform: none; }
 }
 
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+.header-nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+.nav-link {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: all .15s;
+}
+.nav-link:hover { background: var(--gray-100); color: var(--gray-900); }
+.nav-link--active { background: var(--brand-light); color: var(--brand); }
+
+/* ── Form textarea ────────────────────────────────────────────────────────── */
+.form-group--full { grid-column: 1 / -1; }
+.form-group textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color .15s;
+}
+.form-group textarea:focus { border-color: var(--brand); }
+
+/* ── Page Heading ─────────────────────────────────────────────────────────── */
+.page-heading { background: white; border-bottom: 1px solid var(--gray-200); }
+.page-heading-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-heading h2 { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+.page-heading p  { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
+
+/* ── Reminder Groups ──────────────────────────────────────────────────────── */
+.reminder-group {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.reminder-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  border-left: 4px solid var(--brand);
+}
+.reminder-group--danger   .reminder-group-header { border-left-color: var(--danger);  background: var(--danger-bg); }
+.reminder-group--critical .reminder-group-header { border-left-color: #e11d48;        background: #fff1f2; }
+.reminder-group--warning  .reminder-group-header { border-left-color: var(--warning); background: var(--warning-bg); }
+.reminder-group--caution  .reminder-group-header { border-left-color: #f59e0b;        background: #fffbeb; }
+.reminder-group--info     .reminder-group-header { border-left-color: var(--brand);   background: var(--brand-light); }
+.reminder-group-header h3 { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+.reminder-count {
+  background: var(--gray-200); color: var(--gray-700);
+  border-radius: 999px; padding: 2px 10px;
+  font-size: 13px; font-weight: 600;
+}
+.reminder-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--gray-100);
+}
+.reminder-card { background: white; padding: 16px 20px; }
+.reminder-card-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px; margin-bottom: 4px;
+}
+.reminder-name { font-weight: 700; color: var(--gray-900); font-size: 15px; }
+.reminder-days {
+  font-size: 12px; font-weight: 700; color: var(--danger);
+  white-space: nowrap; background: var(--danger-bg);
+  padding: 2px 8px; border-radius: 999px;
+}
+.reminder-group--info    .reminder-days { color: var(--brand);   background: var(--brand-light); }
+.reminder-group--caution .reminder-days { color: var(--warning); background: var(--warning-bg); }
+.reminder-group--warning .reminder-days { color: var(--warning); background: var(--warning-bg); }
+.reminder-meta {
+  font-size: 13px; color: var(--gray-500); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.reminder-dot { color: var(--gray-300); }
+.reminder-details { font-size: 13px; color: var(--gray-700); display: flex; flex-direction: column; gap: 4px; }
+.reminder-details a { color: var(--brand); text-decoration: none; }
+.reminder-details a:hover { text-decoration: underline; }
+.reminder-notes {
+  margin-top: 6px; font-style: italic; color: var(--gray-500);
+  font-size: 12px; border-top: 1px solid var(--gray-100); padding-top: 6px;
+}
+
 /* ── Utility ──────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
